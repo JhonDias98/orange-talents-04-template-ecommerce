@@ -4,10 +4,13 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
+import br.com.zupacademy.jonathan.mercadolivre.utils.validations.UniqueValue;
+
 public class UsuarioRequest {
 
 	@NotBlank
 	@Email
+	@UniqueValue(domainClass = Usuario.class, fieldName = "login", message = "Já existe um usuário com esse e-mail/login")
 	private String login;
 	@NotBlank
 	@Size(min = 6)
