@@ -8,6 +8,8 @@ import javax.persistence.Query;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
+import org.springframework.util.Assert;
+
 public class UniqueValueValidator implements ConstraintValidator<UniqueValue, Object>{
 
 	private String domainAttribute;
@@ -23,10 +25,11 @@ public class UniqueValueValidator implements ConstraintValidator<UniqueValue, Ob
 
 	@Override
 	public boolean isValid(Object value, ConstraintValidatorContext context) {
-		//Aqui é construido a query para consultar os dados
 		Query query = manager.createQuery("SELECT 1 FROM " + klass.getName() + " WHERE " + domainAttribute + "=:value");
 		query.setParameter("value", value);
 		List<?> list = query.getResultList();
+		Assert.isTrue(list.size() <= 1, "Foi encontrado mais de um " + klass + " com o atributo " + domainAttribute + " = " + value);
+		
 		return list.isEmpty();
 	}
 }

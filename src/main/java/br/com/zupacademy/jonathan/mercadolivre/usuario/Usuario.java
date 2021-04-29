@@ -46,4 +46,20 @@ public class Usuario {
 
 	@Deprecated
 	public Usuario() {}
+
+	public Long getId() {
+		return id;
+	}
+
+	public String getLogin() {
+		return login;
+	}
+
+	public String getSenha() {
+		return senha;
+	}
+
+	public LocalDateTime getInstanteCadastro() {
+		return instanteCadastro;
+	}
 }
