@@ -27,6 +27,7 @@ import com.sun.istack.NotNull;
 import br.com.zupacademy.jonathan.mercadolivre.categoria.Categoria;
 import br.com.zupacademy.jonathan.mercadolivre.produto.caracteristica.Caracteristica;
 import br.com.zupacademy.jonathan.mercadolivre.produto.caracteristica.CaracteristicaRequest;
+import br.com.zupacademy.jonathan.mercadolivre.produto.imagem.Imagem;
 import br.com.zupacademy.jonathan.mercadolivre.usuario.Usuario;
 import io.jsonwebtoken.lang.Assert;
 
@@ -56,9 +57,13 @@ public class Produto {
 	@NotNull
 	@ManyToOne
 	private Usuario dono;
+	@Size(min = 3)
 	@OneToMany(mappedBy = "produto", cascade = CascadeType.PERSIST)
 	//cascade = CascadeType.PERSIST: sempre que cadastrar um produto, pode registrar as características junto
 	private Set<Caracteristica> caracteristicas = new HashSet<>();
+	//cascade = CascadeType.MERGE: atualiza ambos
+	@OneToMany(mappedBy = "produto", cascade = CascadeType.MERGE)
+	private Set<Imagem> imagens = new HashSet<>();
 
 	public Produto(@NotBlank String nome, @Positive BigDecimal valor, @Positive Integer quantidade,
 			@NotBlank @Length(max = 1000) String descricao, Categoria categoria, Usuario dono, 
@@ -74,6 +79,11 @@ public class Produto {
 				.collect(Collectors.toSet()));
 		
 		Assert.isTrue(this.caracteristicas.size() >= 3, "Todo produto precisa ter no minomo 3 características");
+	}
+	
+	@Deprecated
+	public Produto() {
+		
 	}
 
 	public Long getId() {
@@ -108,29 +118,13 @@ public class Produto {
 		return instanteCadastro;
 	}
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((nome == null) ? 0 : nome.hashCode());
-		return result;
+	public void associaImagens(Set<String> links) {
+		Set<Imagem> imagens = links.stream().map(link -> new Imagem(this, link)).collect(Collectors.toSet());
+		this.imagens.addAll(imagens);
 	}
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Produto other = (Produto) obj;
-		if (nome == null) {
-			if (other.nome != null)
-				return false;
-		} else if (!nome.equals(other.nome))
-			return false;
-		return true;
+	public boolean pertenceAoUsuario(Usuario possivelDono) {
+		return this.dono.equals(possivelDono);
 	}
 
 }
