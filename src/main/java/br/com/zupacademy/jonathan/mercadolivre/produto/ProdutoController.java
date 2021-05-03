@@ -9,6 +9,7 @@ import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,6 +22,9 @@ import org.springframework.web.server.ResponseStatusException;
 import br.com.zupacademy.jonathan.mercadolivre.produto.caracteristica.ProibeCaracteristicasComNomeIgualValidator;
 import br.com.zupacademy.jonathan.mercadolivre.produto.imagem.ImagemRequest;
 import br.com.zupacademy.jonathan.mercadolivre.produto.imagem.Uploader;
+import br.com.zupacademy.jonathan.mercadolivre.produto.opiniao.Opiniao;
+import br.com.zupacademy.jonathan.mercadolivre.produto.opiniao.OpiniaoRequest;
+import br.com.zupacademy.jonathan.mercadolivre.produto.opiniao.OpiniaoResponse;
 import br.com.zupacademy.jonathan.mercadolivre.usuario.Usuario;
 import br.com.zupacademy.jonathan.mercadolivre.usuario.UsuarioRepository;
 
@@ -78,5 +82,16 @@ public class ProdutoController {
 		Set<String> links = uploaderFake.envia(request.getImagens());
 		produto.associaImagens(links);
 		manager.merge(produto);
+	}
+	
+	@PostMapping(value = "/{id}/opiniao")
+	@Transactional
+	public ResponseEntity<OpiniaoResponse> adicionarOpiniao(@PathVariable Long id, @RequestBody @Valid OpiniaoRequest request) {
+		Usuario usuarioLogado = usuarioRepository.findByLogin("jonathan@email.com").get();
+		Produto produto = manager.find(Produto.class, id);
+		Opiniao opiniao = request.toModel(usuarioLogado, produto);
+		manager.persist(opiniao);
+		
+		return ResponseEntity.ok(new OpiniaoResponse(opiniao));
 	}
 }
