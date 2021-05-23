@@ -33,4 +33,20 @@ public class Caracteristica {
 	public Caracteristica() {
 	}
 
+	public Long getId() {
+		return id;
+	}
+
+	public String getNome() {
+		return nome;
+	}
+
+	public String getDescricao() {
+		return descricao;
+	}
+
+	public Produto getProduto() {
+		return produto;
+	}
+
 }

@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -101,5 +102,11 @@ public class ProdutoController {
 		emails.novaPergunta(pergunta);
 		
 		return ResponseEntity.ok(new PerguntaResponse(pergunta));
+	}
+	
+	@GetMapping("/{id}")
+	public ProdutoDetalheResponse consultarProduto(@PathVariable("id") Long id) {
+		Produto produto = manager.find(Produto.class, id);
+		return new ProdutoDetalheResponse(produto);
 	}
 }

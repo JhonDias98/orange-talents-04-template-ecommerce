@@ -2,9 +2,14 @@ package br.com.zupacademy.jonathan.mercadolivre.produto;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.persistence.CascadeType;
@@ -14,6 +19,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OrderBy;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Positive;
@@ -28,6 +34,8 @@ import br.com.zupacademy.jonathan.mercadolivre.categoria.Categoria;
 import br.com.zupacademy.jonathan.mercadolivre.produto.caracteristica.Caracteristica;
 import br.com.zupacademy.jonathan.mercadolivre.produto.caracteristica.CaracteristicaRequest;
 import br.com.zupacademy.jonathan.mercadolivre.produto.imagem.Imagem;
+import br.com.zupacademy.jonathan.mercadolivre.produto.opiniao.Opiniao;
+import br.com.zupacademy.jonathan.mercadolivre.produto.pergunta.Pergunta;
 import br.com.zupacademy.jonathan.mercadolivre.usuario.Usuario;
 import io.jsonwebtoken.lang.Assert;
 
@@ -64,6 +72,11 @@ public class Produto {
 	//cascade = CascadeType.MERGE: atualiza ambos
 	@OneToMany(mappedBy = "produto", cascade = CascadeType.MERGE)
 	private Set<Imagem> imagens = new HashSet<>();
+	@OneToMany(mappedBy = "produto")
+	@OrderBy("titulo asc")
+	private SortedSet<Pergunta> perguntas = new TreeSet<>();
+    @OneToMany(mappedBy = "produto")
+    private List<Opiniao> opinioes = new ArrayList<>();
 
 	public Produto(@NotBlank String nome, @Positive BigDecimal valor, @Positive Integer quantidade,
 			@NotBlank @Length(max = 1000) String descricao, Categoria categoria, Usuario dono, 
@@ -106,6 +119,10 @@ public class Produto {
 		return descricao;
 	}
 
+	public LocalDateTime getInstanteCadastro() {
+		return instanteCadastro;
+	}
+
 	public Categoria getCategoria() {
 		return categoria;
 	}
@@ -114,10 +131,16 @@ public class Produto {
 		return dono;
 	}
 
-	public LocalDateTime getInstanteCadastro() {
-		return instanteCadastro;
+	public Set<Caracteristica> getCaracteristicas() {
+		return caracteristicas;
 	}
 
+	public Set<Imagem> getImagens() {
+		return imagens;
+	}
+	
+
+	//Métodos para lógica de negócios
 	public void associaImagens(Set<String> links) {
 		Set<Imagem> imagens = links.stream().map(link -> new Imagem(this, link)).collect(Collectors.toSet());
 		this.imagens.addAll(imagens);
@@ -126,5 +149,24 @@ public class Produto {
 	public boolean pertenceAoUsuario(Usuario possivelDono) {
 		return this.dono.equals(possivelDono);
 	}
+	
+
+	//Funções genéricas para pegar os atributos dos relacionamentos para exibir os mesmos
+	public <T> Set<T> mapeiaCaracteristicas(Function<Caracteristica, T> funcaoMapeadora){
+        return this.caracteristicas.stream().map(funcaoMapeadora).collect(Collectors.toSet());
+    }
+
+    public <T> Set<T> mapeiaImagens(Function<Imagem, T> funcaoMapeadora){
+        return this.imagens.stream().map(funcaoMapeadora).collect(Collectors.toSet());
+    }
+
+    public <T extends Comparable<T>> SortedSet<T> mapeiaPerguntas(Function<Pergunta, T> funcaoMapeadora) {
+		return this.perguntas.stream().map(funcaoMapeadora)
+				.collect(Collectors.toCollection(TreeSet :: new));
+	}
+
+    public <T> List<T> mapeiaOpinioes(Function<Opiniao, T> funcaoMapeadora){
+        return this.opinioes.stream().map(funcaoMapeadora).collect(Collectors.toList());
+    }
 
 }
